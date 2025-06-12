@@ -52,6 +52,7 @@ public class XMLLoader {
 	}
 	
 	public void load(String url, ILoadListener l){
+		Utils.consoleLog("::: XMLLoader load Start : url[" + url + "] :::");
 		this.listener = l;
 		errorString = null;
 		try {
@@ -72,15 +73,23 @@ public class XMLLoader {
 	}
 
 	private void sendRequest(String url) throws RequestException {
+		Utils.consoleLog("::: XMLLoader sendRequest Start : url[" + url + "] :::");
+		
 		final String resolvedURL = this.getResolvedURL(url);
+		
+		Utils.consoleLog("::: XMLLoader sendRequest 01 : resolvedURL[" + resolvedURL + "] :::");
+		
 		ExtendedRequestBuilder builder = new ExtendedRequestBuilder(ExtendedRequestBuilder.GET, resolvedURL);
+		//RequestBuilder builder = new RequestBuilder(RequestBuilder.GET, resolvedURL);
 		builder.sendRequest(null, new RequestCallback() {
 			public void onError(Request request, Throwable exception) {
+				Utils.consoleLog("::: XMLLoader sendRequest 03 onResponseReceived : error :::");
 				// Couldn't connect to server (could be timeout, SOP violation, etc.)
 				errorString = "Error" + exception.toString();
 			}
 
 			public void onResponseReceived(Request request, Response response){
+				Utils.consoleLog("::: XMLLoader sendRequest 03 onResponseReceived : OK :::");
 				responseHandler(response, resolvedURL);
 			}
 		});
@@ -100,10 +109,13 @@ public class XMLLoader {
 	}
 
 	private void responseHandler(Response response, String resolvedURL) {
+		Utils.consoleLog("::: XMLLoader responseHandler Start : resolvedURL[" + resolvedURL + "] :::");
 		// StatusCode == 0 when loading from local file
 		if (response.getStatusCode() == 200 || response.getStatusCode() == 0) {
+			Utils.consoleLog("::: XMLLoader responseHandler 01 successCallback call :::");
 			successCallback(response.getText(), resolvedURL);
 		} else {
+			Utils.consoleLog("::: XMLLoader responseHandler 02 error :::");
 			// Handle the error.  Can get the status text from response.getStatusText()
 			if(response.getStatusCode() != 404) {
 				listener.onError("Wrong status: " + response.getText());
@@ -114,6 +126,8 @@ public class XMLLoader {
 	}
 
 	protected void successCallback(String xmlString, String resolvedURL) {
+		Utils.consoleLog("::: XMLLoader successCallback Start : xmlString[" + xmlString + "] :::");
+		Utils.consoleLog("::: XMLLoader successCallback 01 : resolvedURL[" + resolvedURL + "] :::");
 		Document dom = XMLParser.parse(xmlString);
 		initContentFromDOM(dom, resolvedURL);
 		listener.onFinishedLoading(model);
@@ -126,6 +140,7 @@ public class XMLLoader {
 	 * @param document
 	 */
 	private void initContentFromDOM(Document dom, String url){
+		Utils.consoleLog("::: XMLLoader initContentFromDOM Start : url[" + url + "] :::");
 		model.load(dom.getDocumentElement(), url);
 	}
 
